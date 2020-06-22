@@ -1,26 +1,33 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import './App.css'
+import InfiniteBlog from './components/InfiniteBlog/InfiniteBlog'
+const getData = require('time-interval-lipsum')
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const convertMapToAssociativeArray = (map: Map<Date, string>) => {
+  const obj: any = {}
+
+  for (let [k, v] of map) {
+    // setting hours for date comparison (without time)
+    obj[k.setHours(0, 0, 0, 0)] = v
+  }
+
+  return obj
 }
 
-export default App;
+function App() {
+  const [input, setInput] = useState({})
+
+  const handleLoadRequest = (start: Date, end: Date) => {
+    const data: Map<Date, string> = getData(start, end)
+    const convertedData = convertMapToAssociativeArray(data)
+    setInput({ ...input, ...convertedData })
+  }
+
+  return (
+    <div className="App">
+      <InfiniteBlog input={input} onLoadRequest={handleLoadRequest} />
+    </div>
+  )
+}
+
+export default App
