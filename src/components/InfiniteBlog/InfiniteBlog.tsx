@@ -32,15 +32,15 @@ export interface InfiniteBlogProps {
 }
 
 export const InfiniteBlogContext = React.createContext<{
-  setSize?: any
-  windowWidth?: any
+  setSize?: (index: number, size?: number) => void
+  windowWidth?: number
 }>({})
 
 const InfiniteBlog = (props: InfiniteBlogProps) => {
   const [sizes, setSizes] = useState<{
     [key: number]: number
   }>({})
-  const { onLoadRequest } = props
+  const { input, onLoadRequest } = props
 
   const listRef = useRef<List | null>(null)
 
@@ -57,13 +57,13 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
     return () => {}
   }, [])
 
-  // const setSize = React.useCallback((index, size) => {
-  //   if (sizes[index] !== size) {
-  //     sizes[index] = size
-  //     setSizes(sizes)
-  //     listRef?.current?.resetAfterIndex(0)
-  //   }
-  // }, [])
+  const setSize = React.useCallback((index: number, size?: number) => {
+    if (sizes[index] !== size && size) {
+      sizes[index] = size
+      setSizes(sizes)
+      listRef?.current?.resetAfterIndex(0)
+    }
+  }, [])
 
   const getSize = React.useCallback(
     (index) => {
@@ -83,7 +83,7 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
     const newDates = [...getDateArray(newFirstDate, newEndDate), ...dates]
     setDates(newDates)
     listRef?.current?.scrollTo((numberOfItemsToGet + 1) * ITEM_DEFAULT_SIZE)
-    // onLoadRequest(newFirstDate, newEndDate)
+    onLoadRequest(newFirstDate, newEndDate)
   }
 
   const generateDatesAfter = () => {
@@ -93,7 +93,7 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
 
     dateFrom.setDate(dateFrom.getDate() + 1)
     dateTo.setDate(dateTo.getDate() + LOAD_DATES_STEP)
-    // onLoadRequest(dateFrom, dateTo)
+    onLoadRequest(dateFrom, dateTo)
     const newArray = dates.concat(getDateArray(dateFrom, dateTo))
     setDates(newArray)
   }
@@ -117,11 +117,9 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
 
   return (
     <InfiniteBlogContext.Provider
-      value={
-        {
-          // setSize
-        }
-      }
+      value={{
+        setSize,
+      }}
     >
       <div className={styles.root}>
         <Autosizer>
@@ -129,7 +127,6 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
             <List
               ref={listRef}
               height={height}
-              // itemCount={input.size}
               itemCount={dates.length}
               estimatedItemSize={400}
               width={width}
@@ -151,7 +148,7 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
                   <Article
                     className={styles.item}
                     date={dates[index]}
-                    // text={input[dates[index].setHours(0, 0, 0, 0)]}
+                    text={input[dates[index].setHours(0, 0, 0, 0)]}
                     index={index}
                   />
                 </div>
