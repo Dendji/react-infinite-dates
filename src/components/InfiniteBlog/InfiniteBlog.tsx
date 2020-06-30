@@ -8,7 +8,7 @@ import {
 } from 'react-window'
 import Autosizer from 'react-virtualized-auto-sizer'
 
-const LOAD_DATES_STEP = 20
+const LOAD_DATES_STEP = 40
 const LEFTOVER_TO_LOAD_NEW = 10
 const ITEM_DEFAULT_SIZE = 50
 
@@ -28,6 +28,7 @@ export interface InfiniteBlogProps {
   input: {
     [key: number]: string
   }
+  isLoading?: boolean
   onLoadRequest: (startDate: Date, endDate: Date) => void
 }
 
@@ -37,9 +38,18 @@ export const InfiniteBlogContext = React.createContext<{
 }>({})
 
 const InfiniteBlog = (props: InfiniteBlogProps) => {
-  const [sizes, setSizes] = useState<{
-    [key: number]: number
-  }>({})
+  const sizeMap = React.useRef<any>({})
+  const setSize = React.useCallback((index, size) => {
+    if (sizeMap.current[index] !== size && size) {
+      sizeMap.current = { ...sizeMap.current, [index]: size }
+      listRef?.current?.resetAfterIndex(0)
+    }
+  }, [])
+  const getSize = React.useCallback(
+    (index) => sizeMap.current[index] || ITEM_DEFAULT_SIZE,
+    [],
+  )
+
   const { input, onLoadRequest } = props
 
   const listRef = useRef<List | null>(null)
@@ -56,21 +66,6 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
     setDates(getDateArray(startDate, endDate))
     return () => {}
   }, [])
-
-  const setSize = React.useCallback((index: number, size?: number) => {
-    if (sizes[index] !== size && size) {
-      sizes[index] = size
-      setSizes(sizes)
-      listRef?.current?.resetAfterIndex(0)
-    }
-  }, [])
-
-  const getSize = React.useCallback(
-    (index) => {
-      return sizes[index] + 20 || ITEM_DEFAULT_SIZE
-    },
-    [sizes],
-  )
 
   const generateDatesBefore = () => {
     const newFirstDate = new Date(dates[0])
@@ -93,9 +88,9 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
 
     dateFrom.setDate(dateFrom.getDate() + 1)
     dateTo.setDate(dateTo.getDate() + LOAD_DATES_STEP)
-    onLoadRequest(dateFrom, dateTo)
     const newArray = dates.concat(getDateArray(dateFrom, dateTo))
     setDates(newArray)
+    onLoadRequest(dateFrom, dateTo)
   }
 
   const handleItemsRendered = ({

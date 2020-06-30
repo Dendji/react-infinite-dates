@@ -52,7 +52,6 @@ const InfiniteBlogArticle = (props: InfiniteBlogArticleProps) => {
         ) : (
           date.toLocaleDateString('en-US', options)
         )}
-        {/* {date.toLocaleDateString('en-US', options)} */}
       </div>
       {text && <div className={style.text}>{text}</div>}
     </div>

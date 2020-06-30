@@ -16,16 +16,22 @@ const convertMapToAssociativeArray = (map: Map<Date, string>) => {
 
 function App() {
   const [input, setInput] = useState({})
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const handleLoadRequest = (start: Date, end: Date) => {
-    const data: Map<Date, string> = getData(start, end)
+  const handleLoadRequest = async (start: Date, end: Date) => {
+    setIsLoading(true)
+    const data: Map<Date, string> = await getData(start, end)
     const convertedData = convertMapToAssociativeArray(data)
     setInput({ ...input, ...convertedData })
   }
 
   return (
     <div className="App">
-      <InfiniteBlog input={input} onLoadRequest={handleLoadRequest} />
+      <InfiniteBlog
+        input={input}
+        onLoadRequest={handleLoadRequest}
+        isLoading={isLoading}
+      />
     </div>
   )
 }
