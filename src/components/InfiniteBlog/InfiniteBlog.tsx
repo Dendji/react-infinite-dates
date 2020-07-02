@@ -10,7 +10,7 @@ import Autosizer from 'react-virtualized-auto-sizer'
 
 const LOAD_DATES_STEP = 40
 const LEFTOVER_TO_LOAD_NEW = 10
-const ITEM_DEFAULT_SIZE = 50
+const ITEM_DEFAULT_SIZE = 40
 
 const getDateArray = function (start: Date, end: Date): Date[] {
   const arr = [],
@@ -70,14 +70,14 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
   const generateDatesBefore = () => {
     const newFirstDate = new Date(dates[0])
     const newEndDate = new Date(dates[0])
-    const numberOfItemsToGet = 10
 
-    newFirstDate.setDate(newFirstDate.getDate() - (1 + numberOfItemsToGet))
+    newFirstDate.setDate(newFirstDate.getDate() - (1 + LOAD_DATES_STEP))
     newEndDate.setDate(newEndDate.getDate() - 1)
 
     const newDates = [...getDateArray(newFirstDate, newEndDate), ...dates]
     setDates(newDates)
-    listRef?.current?.scrollTo((numberOfItemsToGet + 1) * ITEM_DEFAULT_SIZE)
+    sizeMap.current = {}
+    listRef?.current?.scrollToItem(LOAD_DATES_STEP + 1, 'start')
     onLoadRequest(newFirstDate, newEndDate)
   }
 
@@ -123,7 +123,6 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
               ref={listRef}
               height={height}
               itemCount={dates.length}
-              estimatedItemSize={400}
               width={width}
               itemSize={getSize}
               className={styles.List}
@@ -139,13 +138,15 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
                 index: number
                 style: React.CSSProperties
               }) => (
-                <div style={style}>
-                  <Article
-                    className={styles.item}
-                    date={dates[index]}
-                    text={input[dates[index].setHours(0, 0, 0, 0)]}
-                    index={index}
-                  />
+                <div style={style} data-key={index}>
+                  {!!dates[index] && (
+                    <Article
+                      className={styles.item}
+                      date={dates[index]}
+                      text={input[dates[index].setHours(0, 0, 0, 0)]}
+                      index={index}
+                    />
+                  )}
                 </div>
               )}
             </List>

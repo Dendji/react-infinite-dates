@@ -16,6 +16,7 @@
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
     "react-virtualized-auto-sizer": "^1.0.2",
+    "react-waypoint": "^9.0.3",
     "react-window": "^1.8.5",
     "time-interval-lipsum": "github:smhg/time-interval-lipsum#master",
     "typescript": "~3.7.2"

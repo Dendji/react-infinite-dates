@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import style from './InfiniteBlogArticle.module.css'
 import { InfiniteBlogContext } from './InfiniteBlog'
+import { Waypoint } from 'react-waypoint'
 
 function daysBetween(first: Date, second: Date) {
   // Copy date parts of the timestamps, discarding the time parts.
@@ -33,28 +34,41 @@ var options = {
 const InfiniteBlogArticle = (props: InfiniteBlogArticleProps) => {
   const { index, text, date, className } = props
   const today = new Date()
-  const { setSize, windowWidth } = React.useContext(InfiniteBlogContext)
+  const { setSize } = React.useContext(InfiniteBlogContext)
   const root = React.useRef<HTMLDivElement>(null)
+  const [isTextVisible, setIsTextVisible] = useState(false)
 
-  React.useEffect(() => {
+  const handleEnter = () => {
+    setIsTextVisible(true)
+
+    if (setSize && text) {
+      setSize(index, root?.current?.getBoundingClientRect().height)
+    }
+  }
+
+  const handleStartEnter = () => {
     if (setSize) {
       setSize(index, root?.current?.getBoundingClientRect().height)
     }
-  }, [windowWidth, index, setSize])
+  }
 
   return (
-    <div className={[style.root, className].join(' ')} ref={root}>
-      <div className={style.date}>
-        {daysBetween(today, date) === 0 ? (
-          <strong className={style.today}>
-            TODAY {date.toLocaleDateString('en-US', options)}
-          </strong>
-        ) : (
-          date.toLocaleDateString('en-US', options)
-        )}
+    <Waypoint onEnter={handleStartEnter}>
+      <div className={[style.root, className].join(' ')} ref={root}>
+        <Waypoint onEnter={handleEnter} topOffset={40}>
+          <div className={style.date}>
+            {daysBetween(today, date) === 0 ? (
+              <strong className={style.today}>
+                TODAY {date.toLocaleDateString('en-US', options)}
+              </strong>
+            ) : (
+              date.toLocaleDateString('en-US', options)
+            )}
+          </div>
+        </Waypoint>
+        {text && isTextVisible && <div className={style.text}>{text}</div>}
       </div>
-      {text && <div className={style.text}>{text}</div>}
-    </div>
+    </Waypoint>
   )
 }
 
