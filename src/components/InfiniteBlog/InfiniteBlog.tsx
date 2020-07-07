@@ -37,7 +37,7 @@ export const InfiniteBlogContext = React.createContext<{
   windowWidth?: number
 }>({})
 
-const InfiniteBlog = (props: InfiniteBlogProps) => {
+const InfiniteBlog = ({ input, onLoadRequest }: InfiniteBlogProps) => {
   const sizeMap = React.useRef<any>({})
   const setSize = React.useCallback((index, size) => {
     if (sizeMap.current[index] !== size && size) {
@@ -50,22 +50,27 @@ const InfiniteBlog = (props: InfiniteBlogProps) => {
     [],
   )
 
-  const { input, onLoadRequest } = props
-
   const listRef = useRef<List | null>(null)
 
   const [dates, setDates] = useState<Date[]>([])
 
   useEffect(() => {
+    const today = new Date()
     const startDate = new Date()
-    startDate.setDate(startDate.getDate() - 1)
-
+    startDate.setDate(today.getDate() - LOAD_DATES_STEP)
     let endDate = new Date()
-    endDate.setDate(startDate.getDate() + LOAD_DATES_STEP)
+    endDate.setDate(today.getDate() + LOAD_DATES_STEP - 1)
+
     onLoadRequest(startDate, endDate)
     setDates(getDateArray(startDate, endDate))
     return () => {}
   }, [])
+
+  useEffect(() => {
+    if (dates.length === LOAD_DATES_STEP * 2) {
+      listRef?.current?.scrollToItem(LOAD_DATES_STEP, 'start')
+    }
+  }, [dates])
 
   const generateDatesBefore = () => {
     const newFirstDate = new Date(dates[0])
